@@ -1,23 +1,34 @@
-import logo from './logo.svg';
-import './App.css';
-
+import React from "react";
+import { useSelector, useDispatch } from "react-redux";
+import { changeSignal } from "./signalSlice";
 function App() {
+  const signal = useSelector((state) => state.signal.currentSignal);
+  const dispatch = useDispatch();
+
   return (
     <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
+      <button
+        onClick={() => {
+          dispatch(changeSignal("RED"));
+        }}
+      >
+        Red
+      </button>
+      <button
+        onClick={() => {
+          dispatch(changeSignal("GREEN"));
+        }}
+      >
+        Green
+      </button>
+      <button
+        onClick={() => {
+          dispatch(changeSignal("ORANGE"));
+        }}
+      >
+        Orange
+      </button>
+      {signal}
     </div>
   );
 }
