@@ -1,70 +1,82 @@
-# Getting Started with Create React App
+# Traffic signal using Redux Toolkit and Redux-Saga
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+## About the project
+This project simulates a traffic signal with three lights: Green, Orange and Red. 
 
-## Available Scripts
+## About the code 
+* Redux store has been created in `store.js` with `configureStore` of Redux Toolkit with default middleware. Thunk has been disabled and `sagaMiddleware` has been added.
+```JavaScript
+const sagaMiddleware = createSagaMiddleware();
 
-In the project directory, you can run:
+export const store = configureStore({
+  reducer: { signal: signalReducer },
+  middleware: (getDefaultMiddleware) =>
+    getDefaultMiddleware({
+      thunk: false,
+    }).prepend(sagaMiddleware),
+});
 
-### `npm start`
+```
 
-Runs the app in the development mode.\
-Open [http://localhost:3000](http://localhost:3000) to view it in your browser.
+* React-Redux `<Provider>` component has been put around `<App/>`
+```JSX
+const root = ReactDOM.createRoot(document.getElementById("root"));
+root.render(
+  <Provider store={store}>
+    <React.StrictMode>
+      <App />
+    </React.StrictMode>
+  </Provider>
+);
+```
 
-The page will reload when you make changes.\
-You may also see any lint errors in the console.
+* A Redux "slice" reducer has been created with `createSlice`. `createSlice` is a Redux Toolkit function that accepts an initial state, an object of reducer functions, and a "slice name", and _automatically generates action creators and action types that correspond to the reducers and state_.
+ 
+```JavaScript
+import { createSlice } from "@reduxjs/toolkit";
 
-### `npm test`
+const initialState = {
+  currentSignal: "RED",
+};
 
-Launches the test runner in the interactive watch mode.\
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
+export const signalSlice = createSlice({
+  name: "signal",
+  initialState,
+  reducers: {
+    changeSignal: (state, action) => {
+      state.currentSignal = action.payload;
+    },
+  },
+});
 
-### `npm run build`
+// Action creators are generated for each case reducer function
+export const { changeSignal } = signalSlice.actions;
 
-Builds the app for production to the `build` folder.\
-It correctly bundles React in production mode and optimizes the build for the best performance.
+export default signalSlice.reducer;
+```
 
-The build is minified and the filenames include the hashes.\
-Your app is ready to be deployed!
+* Data from the store is read using `useSelector` hook. Dispatch function is called using `useDispatch` hook. 
 
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
+```JSX
+import { useSelector, useDispatch } from "react-redux";
+function App() {
+  const signal = useSelector((state) => state.signal.currentSignal);
+  const dispatch = useDispatch();
 
-### `npm run eject`
+  return (
+    <div className="App">
+      <button
+        onClick={() => {
+          dispatch(changeSignal("RED"));
+        }}
+      >
+        Red
+      </button>
+        {/*... */}
+      {signal}
+    </div>
+  );
+}
 
-**Note: this is a one-way operation. Once you `eject`, you can't go back!**
-
-If you aren't satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
-
-Instead, it will copy all the configuration files and the transitive dependencies (webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you're on your own.
-
-You don't have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn't feel obligated to use this feature. However we understand that this tool wouldn't be useful if you couldn't customize it when you are ready for it.
-
-## Learn More
-
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
-
-To learn React, check out the [React documentation](https://reactjs.org/).
-
-### Code Splitting
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/code-splitting](https://facebook.github.io/create-react-app/docs/code-splitting)
-
-### Analyzing the Bundle Size
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size](https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size)
-
-### Making a Progressive Web App
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app](https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app)
-
-### Advanced Configuration
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/advanced-configuration](https://facebook.github.io/create-react-app/docs/advanced-configuration)
-
-### Deployment
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/deployment](https://facebook.github.io/create-react-app/docs/deployment)
-
-### `npm run build` fails to minify
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify](https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify)
+export default App;
+```
